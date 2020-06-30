@@ -329,7 +329,7 @@ export default class RichTextEditor extends Component {
           hideKeyboardAccessoryView={true}
           keyboardDisplayRequiresUserAction={false}
           ref={(r) => {this.webview = r}}
-          onMessage={(message) => this.onMessage(message)}
+          onBridgeMessage={(message) => this.onBridgeMessage(message)}
           // injectedJavaScript={injectScript}
           source={pageSource}
           onLoad={() => this.init()}
