@@ -12,6 +12,8 @@ import {Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, Pi
 //   }());
 // `;
 
+const minHeight = 40;
+
 const PlatformIOS = Platform.OS === 'ios';
 
 export default class RichTextEditor extends Component {
@@ -25,19 +27,24 @@ export default class RichTextEditor extends Component {
     hiddenTitle: PropTypes.bool,
     enableOnChange: PropTypes.bool,
     footerHeight: PropTypes.number,
-    contentInset: PropTypes.object
+    contentInset: PropTypes.object,
+    autoHeight: PropTypes.bool,
+    minHeight: PropTypes.number
   };
 
   static defaultProps = {
     contentInset: {},
-    style: {}
+    style: {},
+    autoHeight: false,
+    minHeight: minHeight,
   };
 
   constructor(props) {
     super(props);
     this._sendAction = this._sendAction.bind(this);
     this.registerToolbar = this.registerToolbar.bind(this);
-    this.onMessage = this.onMessage.bind(this);
+    this.onUpdateEditorHeight = this.onUpdateEditorHeight.bind(this);
+    this.onBridgeMessage = this.onBridgeMessage.bind(this);
     this._onKeyboardWillShow = this._onKeyboardWillShow.bind(this);
     this._onKeyboardWillHide = this._onKeyboardWillHide.bind(this);
     this.state = {
@@ -47,12 +54,13 @@ export default class RichTextEditor extends Component {
       linkInitialUrl: '',
       linkTitle: '',
       linkUrl: '',
-      keyboardHeight: 0
+      keyboardHeight: 0,
+      height: props.minHeight || minHeight,
     };
     this._selectedTextChangeListeners = [];
   }
 
-  componentDidMount() {
+  componentWillMount() {
     if(PlatformIOS) {
       this.keyboardEventListeners = [
         Keyboard.addListener('keyboardWillShow', this._onKeyboardWillShow),
@@ -71,6 +79,8 @@ export default class RichTextEditor extends Component {
   }
 
   _onKeyboardWillShow(event) {
+    if (!event.endCoordinates) return;
+
     const newKeyboardHeight = event.endCoordinates.height;
     if (this.state.keyboardHeight === newKeyboardHeight) {
       return;
@@ -90,12 +100,21 @@ export default class RichTextEditor extends Component {
     const {marginTop = 0, marginBottom = 0} = this.props.style;
     const spacing = marginTop + marginBottom + top + bottom;
 
-    const editorAvailableHeight = Dimensions.get('window').height - keyboardHeight - spacing;
+    const editorAvailableHeight = Dimensions.get('window').height - (keyboardHeight * 2) - spacing;
+
     this.setEditorHeight(editorAvailableHeight);
   }
 
-  onMessage({ nativeEvent }){
-    const { data: str } = nativeEvent;
+  onUpdateEditorHeight(height) {
+      const { height: oldHeight } = this.state;
+      const newHeight = Math.max(height, this.props.minHeight || minHeight);
+
+      if (this.props.autoHeight && newHeight !== oldHeight) {
+        this.setState({ height: newHeight });
+      }
+  }
+
+  onBridgeMessage(str){
     try {
       const message = JSON.parse(str);
 
@@ -150,8 +169,8 @@ export default class RichTextEditor extends Component {
           }
           this.setTitlePlaceholder(this.props.titlePlaceholder);
           this.setContentPlaceholder(this.props.contentPlaceholder);
-          this.setTitleHTML(this.props.initialTitleHTML || '');
-          this.setContentHTML(this.props.initialContentHTML || '');
+          this.setTitleHTML(this.props.initialTitleHTML);
+          this.setContentHTML(this.props.initialContentHTML);
 
           this.props.hiddenTitle && this.hideTitle();
           this.props.enableOnChange && this.enableOnChange();
@@ -170,11 +189,17 @@ export default class RichTextEditor extends Component {
         case messages.SCROLL:
           this.webview.setNativeProps({contentOffset: {y: message.data}});
           break;
+        case messages.HEIGHT_CHANGED:
+          this.onUpdateEditorHeight(message.data);
+          break;
         case messages.TITLE_FOCUSED:
           this.titleFocusHandler && this.titleFocusHandler();
           break;
         case messages.CONTENT_FOCUSED:
           this.contentFocusHandler && this.contentFocusHandler();
+          break;
+        case messages.CONTENT_BLUR:
+          this.contentBlurHandler && this.contentBlurHandler();
           break;
         case messages.SELECTION_CHANGE: {
           const items = message.data.items;
@@ -293,10 +318,14 @@ export default class RichTextEditor extends Component {
   render() {
     //in release build, external html files in Android can't be required, so they must be placed in the assets folder and accessed via uri
     const pageSource = PlatformIOS ? require('./editor.html') : { uri: 'file:///android_asset/editor.html' };
+    const isAutoHeight = !!this.props.autoHeight;
+
     return (
       <View style={{flex: 1}}>
         <WebView
           {...this.props}
+          scrollEnabled={!isAutoHeight}
+          style={[this.props.style || {}, { height: this.state.height }]}
           hideKeyboardAccessoryView={true}
           keyboardDisplayRequiresUserAction={false}
           ref={(r) => {this.webview = r}}
@@ -604,7 +633,10 @@ export default class RichTextEditor extends Component {
 
   setContentFocusHandler(callbackHandler) {
     this.contentFocusHandler = callbackHandler;
-    this._sendAction(actions.setContentFocusHandler);
+  }
+
+  setContentBlurHandler(callbackHandler) {
+    this.contentBlurHandler = callbackHandler;
   }
 
   addSelectedTextChangeListener(listener) {
