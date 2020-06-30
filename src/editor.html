@@ -1001,7 +1001,7 @@
 
 			zss_editor.updateWindowHeight = function() {
 				const newHeight = document.body.offsetHeight;
-				WebViewBridge.send(JSON.stringify({type: 'HEIGHT_CHANGED', data: newHeight}));
+				ReactNativeWebView.postMessage(JSON.stringify({type: 'HEIGHT_CHANGED', data: newHeight}));
 			}
 
 			function setPlaceholder(editorId, placeholder) {
