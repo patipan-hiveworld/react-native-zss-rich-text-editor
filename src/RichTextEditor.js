@@ -44,7 +44,7 @@ export default class RichTextEditor extends Component {
     this._sendAction = this._sendAction.bind(this);
     this.registerToolbar = this.registerToolbar.bind(this);
     this.onUpdateEditorHeight = this.onUpdateEditorHeight.bind(this);
-    this.onBridgeMessage = this.onBridgeMessage.bind(this);
+    this.onMessage = this.onMessage.bind(this);
     this._onKeyboardWillShow = this._onKeyboardWillShow.bind(this);
     this._onKeyboardWillHide = this._onKeyboardWillHide.bind(this);
     this.state = {
@@ -114,7 +114,7 @@ export default class RichTextEditor extends Component {
       }
   }
 
-  onBridgeMessage(str){
+  onMessage(str){
     try {
       const message = JSON.parse(str);
 
@@ -329,7 +329,7 @@ export default class RichTextEditor extends Component {
           hideKeyboardAccessoryView={true}
           keyboardDisplayRequiresUserAction={false}
           ref={(r) => {this.webview = r}}
-          onBridgeMessage={(message) => this.onBridgeMessage(message)}
+          onMessage={(message) => this.onMessage(message)}
           // injectedJavaScript={injectScript}
           source={pageSource}
           onLoad={() => this.init()}
