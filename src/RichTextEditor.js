@@ -60,7 +60,7 @@ export default class RichTextEditor extends Component {
     this._selectedTextChangeListeners = [];
   }
 
-  componentWillMount() {
+  componentDidMount() {
     if(PlatformIOS) {
       this.keyboardEventListeners = [
         Keyboard.addListener('keyboardWillShow', this._onKeyboardWillShow),
@@ -114,7 +114,8 @@ export default class RichTextEditor extends Component {
       }
   }
 
-  onMessage(str){
+  onMessage({ nativeEvent }){
+    const { data: str } = nativeEvent;
     try {
       const message = JSON.parse(str);
 
