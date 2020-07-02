@@ -578,6 +578,14 @@ export default class RichTextEditor extends Component {
     this._sendAction(actions.setPlatform, Platform.OS);
   }
 
+  undo(){
+    this._sendAction(actions.undo)
+  }
+
+  redo(){
+    this._sendAction(actions.redo)
+  }
+
   async getTitleHtml() {
     return new Promise((resolve, reject) => {
       this.titleResolve = resolve;

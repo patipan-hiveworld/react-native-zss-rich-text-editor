@@ -114,5 +114,9 @@ export const MessageConverter = (action) => {
     case `${actions.getSelectedText}`:
       return `var selectedText = getSelection().toString();
       ReactNativeWebView.postMessage(JSON.stringify({type: '${messages.SELECTED_TEXT_RESPONSE}', data: selectedText}));`
+    case `${actions.undo}`:
+      return `zss_editor.undo('${action.data}');`;
+    case `${actions.redo}`:
+      return `zss_editor.redo('${action.data}');`;
   }
 };
