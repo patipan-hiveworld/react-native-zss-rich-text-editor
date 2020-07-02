@@ -75,6 +75,13 @@ export default class RichTextEditor extends Component {
   }
 
   componentWillUnmount() {
+    if (PlatformIOS) {
+      Keyboard.removeListener('keyboardWillShow', this._onKeyboardWillShow);
+      Keyboard.removeListener('keyboardWillHide', this._onKeyboardWillHide);
+    } else {
+      Keyboard.removeListener('keyboardDidShow', this._onKeyboardWillShow);
+      Keyboard.removeListener('keyboardDidHide', this._onKeyboardWillHide);
+    }
     this.keyboardEventListeners.forEach((eventListener) => eventListener.remove());
   }
 
