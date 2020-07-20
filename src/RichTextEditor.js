@@ -332,7 +332,7 @@ export default class RichTextEditor extends Component {
         <head>
           <meta name="viewport" content="width=device-width, user-scalable=no">
           <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet"></link>
-          <script type="text/javascript">${script}</script>
+          ${PlatformIOS ? require('./script.html'): { uri: 'file:///android_asset/script.html' }}
         </head>
         <body>
           <style type="text/css">${this.props.customCSS}</style>
