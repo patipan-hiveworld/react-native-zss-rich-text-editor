@@ -5,7 +5,6 @@ import WebView from 'react-native-webview';
 import {MessageConverter} from './WebviewMessageHandler';
 import {actions, messages} from './const';
 import {Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, PixelRatio, Keyboard, Dimensions} from 'react-native';
-import script from './script';
 
 // const injectScript = `
 //   (function () {
@@ -326,20 +325,7 @@ export default class RichTextEditor extends Component {
 
   render() {
     //in release build, external html files in Android can't be required, so they must be placed in the assets folder and accessed via uri
-    // const pageSource = PlatformIOS ? require('./editor.html') : { uri: 'file:///android_asset/editor.html' };
-    const pageSource = `
-      <!DOCTYPE html>
-        <head>
-          <meta name="viewport" content="width=device-width, user-scalable=no">
-          <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet"></link>
-          ${PlatformIOS ? require('./script.html'): { uri: 'file:///android_asset/script.html' }}
-        </head>
-        <body>
-          <style type="text/css">${this.props.customCSS}</style>
-          ${contentHtml}
-        </body>
-      </html>
-    `;
+    const pageSource = PlatformIOS ? require('./editor.html') : { uri: 'file:///android_asset/editor.html' };
     const isAutoHeight = !!this.props.autoHeight;
 
     return (
@@ -353,7 +339,7 @@ export default class RichTextEditor extends Component {
           ref={(r) => {this.webview = r}}
           onMessage={(message) => this.onMessage(message)}
           // injectedJavaScript={injectScript}
-          source={{html:pageSource}}
+          source={pageSource}
           onLoad={() => this.init()}
         />
         {this._renderLinkModal()}
