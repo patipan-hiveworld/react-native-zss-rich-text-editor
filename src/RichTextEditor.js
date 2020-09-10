@@ -325,15 +325,16 @@ export default class RichTextEditor extends Component {
 
   render() {
     //in release build, external html files in Android can't be required, so they must be placed in the assets folder and accessed via uri
-    const pageSource = PlatformIOS ? require('./editor.html') : { uri: 'file:///android_asset/editor.html' };
-    const isAutoHeight = !!this.props.autoHeight;
+    // const pageSource = PlatformIOS ? require('./editor.html') : { uri: 'file:///android_asset/editor.html' };
+    const pageSource = this.props.editorHtmlFile;
 
     return (
       <View style={{flex: 1}}>
         <WebView
           {...this.props}
-          scrollEnabled={!isAutoHeight}
-          style={[this.props.style || {}, { height: this.state.height }]}
+          bounces={false}
+          scrollEnabled={false}
+          style={this.props.style}
           hideKeyboardAccessoryView={true}
           keyboardDisplayRequiresUserAction={false}
           ref={(r) => {this.webview = r}}
